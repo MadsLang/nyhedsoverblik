@@ -5,7 +5,7 @@ description = ""
 authors = ["MadsLang <madslangs@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "3.9.5"
+python = "^3.9, !=3.9.7"
 pandas = "^1.4.3"
 streamlit = "^1.12.2"
 watchdog = "^2.1.9"

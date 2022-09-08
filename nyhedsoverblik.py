@@ -173,6 +173,9 @@ def clean_title(text):
         'Â«': '«',
         'Ã¸': 'ø',
         'Ã¦': 'æ',
+        'â': '-',
+        '»â': '»',
+        'jâ': '!',
     }
 
     for key,value in encoding_errors.items():
