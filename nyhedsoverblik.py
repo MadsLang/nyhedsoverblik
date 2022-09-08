@@ -166,6 +166,18 @@ def clean_title(text):
 
     text = ' '.join(text.split())
 
+    encoding_errors = {
+        'Ã¥': 'å',
+        'Ã©': 'é',
+        'Â»': '»',
+        'Â«': '«',
+        'Ã¸': 'ø',
+        'Ã¦': 'æ',
+    }
+
+    for key,value in encoding_errors.items():
+        text = text.replace(key,value)
+
     return text
 
 def parse(name, url, xpath_dict):
