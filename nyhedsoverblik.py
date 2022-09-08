@@ -34,7 +34,7 @@ sites = [
         }
     },
     {
-        "name": "JP",
+        "name": "Jyllandsposten",
         "url": "https://jyllands-posten.dk/seneste/",
         "xpaths": {
             "title": "//a[@class='c-article-teaser-heading__link']",
@@ -44,7 +44,7 @@ sites = [
         }
     },
     {
-        "name": "B",
+        "name": "Berlingske",
         "url": "https://www.berlingske.dk/nyheder",
         "xpaths": {
             "title": "//div[contains(@class,'teaser__content')]",
@@ -54,7 +54,7 @@ sites = [
         }
     },
     {
-        "name": "P",
+        "name": "Politiken",
         "url": "https://politiken.dk/nyheder/",
         "xpaths": {
             "title": "//li[@data-element-type='article']/a",
@@ -65,7 +65,7 @@ sites = [
         }
     },
     {
-        "name": "EB",
+        "name": "Ekstra-Bladet",
         "url": "https://ekstrabladet.dk/nyheder/",
         "xpaths": {
             "title": "//div[@class='card-content']//h2",
