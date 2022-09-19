@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit.components.v1 import html
 import pandas as pd
 import numpy as np
+from src.utils import hide_table_row_index
 
 
 
@@ -14,13 +15,11 @@ def load_data():
     df = df.sort_values('published', ascending=False)
     return df
 
-# CSS to inject contained in a string
-hide_table_row_index = """
-            <style>
-            thead tr th:first-child {display:none}
-            tbody th {display:none}
-            </style>
-            """
+
+big_topics = []
+with open("big_topics.txt", "r") as f:
+  for line in f:
+    big_topics.append(line)
 
 # Inject CSS with Markdown
 st.markdown(hide_table_row_index, unsafe_allow_html=True)
@@ -39,15 +38,34 @@ data_load_state.text("")
 
 
 
+
+
+
 st.title('Nyhedsoverblik')
 st.caption(f"Seneste overskrifter er hentet: {df['scrape_time'].values[0]}")
+
+
+
 
 
 
 #st.markdown(f"""<div id='scatter'></div>""", unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown("""## Filtre""")
+    st.markdown("""## \U0001F39B    Filtrer nyhederne!""")
+
+    selected_topic = st.selectbox(
+        'Dagens emner',
+        tuple(['Intet valgt'] + big_topics)
+    )
+    if selected_topic != 'Intet valgt':
+        keywords = selected_topic.split(' ')
+        df = df[
+            df['title'].apply(
+                lambda x: any([k.lower() in x.lower() for k in keywords])
+            )
+        ]
+
     search_word = st.text_input("Søg i dagens overskrifter \U0001F50E",'')
 
     options = st.multiselect(

@@ -130,3 +130,6 @@ dmypy.json
 
 # Mac stuff
 .DS_Store
+
+# Credentials file
+/src/credentials.py

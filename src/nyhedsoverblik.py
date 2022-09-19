@@ -7,6 +7,7 @@ import datetime
 import numpy as np
 import re
 from dateutil.parser import parser
+from analytics import TopicModel
 
 today = datetime.datetime.today().strftime("%Y-%m-%d")
 
@@ -234,5 +235,10 @@ if __name__ == '__main__':
 
     final_df = pd.concat(dfs)
     final_df.to_csv('data/data.csv', encoding='utf-8', index=False)
+    print("Finished getting new data!")
 
-    print("Finished! Wuhu!")
+    tmodel = TopicModel(df=final_df)
+    big_topics = tmodel.get_topics()
+    with open("big_topics.txt", "w", encoding='utf-8') as f:
+        for t in big_topics:
+            f.write(t +"\n")
