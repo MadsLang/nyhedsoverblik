@@ -1,5 +1,4 @@
 name: 'Data-getter'
-description: 'Gets new data'
 on:
   schedule:
     - cron: '0 9 * * *'
