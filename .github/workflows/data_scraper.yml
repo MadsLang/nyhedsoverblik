@@ -1,10 +1,46 @@
-name: Get new data:
-
+name: 'Data-getter'
+description: 'Gets new data'
 on:
   schedule:
     - cron: '0 9 * * *'
   workflow_dispatch:
-
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "composite"
+  steps:
+    #----------------------------------------------
+    #       check-out repo and set-up python
+    #----------------------------------------------
+    - name: Check out repository
+      uses: actions/checkout@v2
+    - name: Set up python
+      id: setup-python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    #----------------------------------------------
+    #  -----  install & configure poetry  -----
+    #----------------------------------------------
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        installer-parallel: true
+    #----------------------------------------------
+    # install dependencies
+    #----------------------------------------------
+    - name: Install dependencies
+      run: poetry install
+    #----------------------------------------------
+    # Download spacy corpus
+    #----------------------------------------------
+    - name: Download spacy corpus
+      run: poetry run python -m spacy download da_core_news_sm
+    #----------------------------------------------
+    # Run script
+    #----------------------------------------------
+    - name: Get new data
+      run: poetry run python src/nyhedsoverblik.py
+    
+
+
