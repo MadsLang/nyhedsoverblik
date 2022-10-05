@@ -7,6 +7,7 @@ on:
 jobs:
   get_new_data_job:
     name: Gets new data
+    runs-on: macos-12
     steps:
       #----------------------------------------------
       #       check-out repo and set-up python
