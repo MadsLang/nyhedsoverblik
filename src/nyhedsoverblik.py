@@ -8,6 +8,9 @@ import numpy as np
 import re
 from dateutil.parser import parser
 from analytics import TopicModel
+import json
+from utils import dictSave
+
 
 today = datetime.datetime.today().strftime("%Y-%m-%d")
 
@@ -17,16 +20,18 @@ sites = [
     {
         "name": "DR",
         "url": "https://www.dr.dk/nyheder",
+        "link_url": 'https://www.dr.dk',
         "xpaths": {
-            "title": "//article[@class='hydra-latest-news-page-short-news']//h2",
-            "text": "//article[@class='hydra-latest-news-page-short-news']//div[@itemprop='articleBody']",
-            "published": "//article[@class='hydra-latest-news-page-short-news']//span[@class='hydra-latest-news-page-short-news__label']",
-            "link": None
+            "title": "//li[contains(@class,'hydra-latest-news-page__list-item')]//h2|//li[contains(@class,'hydra-latest-news-page__list-item')]//span[@class='dre-teaser-title__text']",
+            "text": "//div[@itemprop='articleBody']|//li[contains(@class,'hydra-latest-news-page__list-item')]//span[@class='dre-teaser-title__text']",
+            "published": "//span[@class='dre-teaser-meta-label']",
+            "link": "//div[@class='dre-share-link-copy-url__copy-link-hidden']|//li[contains(@class,'hydra-latest-news-page__list-item')]//span[@class='dre-teaser-title__text']"
         }
     },
     {
         "name": "TV2",
         "url": f"https://nyheder.tv2.dk/live/{today}-nyhedsoverblik", 
+        "link_url": f"https://nyheder.tv2.dk/live/{today}-nyhedsoverblik",
         "xpaths": {
             "title": "//h2[@class='tc_heading tc_post__body__title tc_heading--5']",
             "text": "//div[@class='tc_post__body__post']",
@@ -37,6 +42,7 @@ sites = [
     {
         "name": "Jyllandsposten",
         "url": "https://jyllands-posten.dk/seneste/",
+        "link_url": "https://jyllands-posten.dk",
         "xpaths": {
             "title": "//a[@class='c-article-teaser-heading__link']",
             "text": None,
@@ -47,6 +53,7 @@ sites = [
     {
         "name": "Berlingske",
         "url": "https://www.berlingske.dk/nyheder",
+        "link_url": "https://www.berlingske.dk",
         "xpaths": {
             "title": "//div[contains(@class,'teaser__content')]",
             "text": None,
@@ -57,6 +64,7 @@ sites = [
     {
         "name": "Politiken",
         "url": "https://politiken.dk/nyheder/",
+        "link_url": '',
         "xpaths": {
             "title": "//li[@data-element-type='article']/a",
             "text": None,
@@ -68,6 +76,7 @@ sites = [
     {
         "name": "Ekstra-Bladet",
         "url": "https://ekstrabladet.dk/nyheder/",
+        "link_url": "https://ekstrabladet.dk",
         "xpaths": {
             "title": "//div[@class='card-content']//h2",
             "text": None,
@@ -76,7 +85,6 @@ sites = [
         }
     }
 ]
-
 
 
 def get_html_content(url):
@@ -172,6 +180,7 @@ def clean_title(text):
         'Ã©': 'é',
         'Â»': '»',
         'Â«': '«',
+        "'": '',
         'Ã¸': 'ø',
         'Ã¦': 'æ',
         'â': '-',
@@ -184,7 +193,15 @@ def clean_title(text):
 
     return text
 
-def parse(name, url, xpath_dict):
+def get_link(e):
+    try:
+        link = e.attrib['href']
+    except:
+        link = ''
+
+    return link
+
+def parse(name, url, link_url, xpath_dict):
 
     tree = get_html_content(url)
 
@@ -202,12 +219,13 @@ def parse(name, url, xpath_dict):
     if xpath_dict['text'] != None:
         df['text'] = [e.text_content() for e in tree.xpath(xpath_dict['text'])]
     else: 
-        df['text'] = [np.nan for _ in range(df.shape[0])]
+        df['text'] = ['' for _ in range(df.shape[0])]
 
     if xpath_dict['link'] != None:
-        df['link'] = [e.attrib['href'] for e in tree.xpath(xpath_dict['link'])]
+        df['link'] = [get_link(e) for e in tree.xpath(xpath_dict['link'])]
+
     else:
-        df['link'] = [np.nan for _ in range(df.shape[0])]
+        df['link'] = ['' for _ in range(df.shape[0])]
 
     meta_tag_dict = get_meta_tags(tree)
     df['og:site_name'] = [meta_tag_dict['og:site_name'] for _ in range(df.shape[0])]
@@ -217,6 +235,7 @@ def parse(name, url, xpath_dict):
     df['name'] = [name for _ in range(df.shape[0])]
     df['url'] = [url for _ in range(df.shape[0])]
     df['scrape_time'] = [datetime.datetime.now().strftime('%d.%m.%Y %H:%M') for _ in range(df.shape[0])]
+    df['link'] = df['link'].apply(lambda x: link_url + x)
 
     return df
 
@@ -229,16 +248,15 @@ if __name__ == '__main__':
             parse(
                 name=site['name'],
                 url=site['url'],
+                link_url=site['link_url'],
                 xpath_dict=site['xpaths']
             )
         )
 
     final_df = pd.concat(dfs)
-    final_df.to_csv('data/data.csv', encoding='utf-8', index=False)
+    final_df.to_csv(f'data/data{today}.csv', encoding='utf-8', index=False)
     print("Finished getting new data!")
 
     tmodel = TopicModel(df=final_df)
     big_topics = tmodel.get_topics()
-    with open("big_topics.txt", "w", encoding='utf-8') as f:
-        for t in big_topics:
-            f.write(t +"\n")
+    dictSave.save(big_topics, f'big_topics{today}.json')

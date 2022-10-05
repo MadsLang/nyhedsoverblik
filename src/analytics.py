@@ -4,6 +4,7 @@ import pandas as pd
 import re
 import numpy as np
 from danlp.models.embeddings  import load_wv_with_gensim
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from sklearn.cluster import DBSCAN
 from tqdm import tqdm
 import spacy
@@ -16,7 +17,12 @@ class TopicModel:
         self.tokenizer_re = r"[åøæÅØÆA-Za-z_]+"
         self.nlp = spacy.load("da_core_news_sm")
         self.pos_tag = ['PROPN', 'ADJ', 'NOUN']
+        print('Loading wv...')
         self.model = load_wv_with_gensim('conll17.da.wv')
+
+        print('Loading sum model...')
+        self.sum_tokenizer = AutoTokenizer.from_pretrained("Danish-summarisation/dansum-mt5-base-v1")
+        self.sum_model = AutoModelForSeq2SeqLM.from_pretrained("Danish-summarisation/dansum-mt5-base-v1") 
 
         # DBSCAN params (optional)
         self.eps = eps
@@ -41,14 +47,16 @@ class TopicModel:
         titles_pos_filtered = []
         for title in tqdm(titles):
             tokenized_title = self.nlp(title.lower())
-            titles_pos_filtered.append(
-                [token.text for token in tokenized_title if(token.pos_ in self.pos_tag)]
-            )
+            title_wo_pos = [token.text for token in tokenized_title if(token.pos_ in self.pos_tag)]
+            if len(title_wo_pos) > 0:
+                titles_pos_filtered.append(title_wo_pos)
+            else:
+                titles_pos_filtered.append([token.text for token in tokenized_title])
         return titles_pos_filtered
 
     def replace_OOV_tokens(self, text):
         subwords = [w for w in list(self.model.vocab.keys()) if w in text]
-        ratios = [(w,fuzz.ratio(w,'bandefjender')) for w in subwords]
+        ratios = [(w,fuzz.ratio(w,text)) for w in subwords]
         most_sim_in_vocab = max(ratios,key=lambda item:item[1])[0]
         return most_sim_in_vocab
 
@@ -88,6 +96,27 @@ class TopicModel:
         agg = pd.DataFrame.from_dict(groupby, orient='index', columns=['count'])
         return ' '.join(agg.sort_values('count', ascending=False).index[0:n].tolist())
 
+    def interpret_topics(self, topic_list: list) -> dict:
+   
+        topics_with_summary = {}
+
+        for topic in topic_list:
+            keywords = topic.split(' ')
+            text = '. '.join(
+                self.df[
+                    self.df['title'].apply(
+                        lambda x: any([k.lower() in x.lower() for k in keywords])
+                        )
+                    ]['title'].values
+                )
+
+            inputs = self.sum_tokenizer(text, return_tensors="pt").input_ids
+            outputs = self.sum_model.generate(input_ids=inputs)
+            summary = self.sum_tokenizer.decode(outputs[0], skip_special_tokens=True)
+            topics_with_summary[summary] = topic
+
+        return topics_with_summary
+
     def get_topics(self):
 
         titles = self.df['title'].tolist()
@@ -113,9 +142,14 @@ class TopicModel:
                     n=3
                 )
             )
+
+        topics_with_summary = self.interpret_topics(big_topics)
             
-        for t in big_topics:
+        for t in topics_with_summary.keys():
             print(t)
 
-        return big_topics
+        return topics_with_summary
+
+
+
 

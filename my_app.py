@@ -2,27 +2,28 @@ import streamlit as st
 from streamlit.components.v1 import html
 import pandas as pd
 import numpy as np
-from src.utils import hide_table_row_index
+import datetime
+from src.utils import hide_table_row_index, collapsible_css, collapsible_js, dictSave
 
-
-
-DATA_URL = 'data/data.csv'
+today = datetime.datetime.today().strftime("%Y-%m-%d")
+DATA_URL = f'data/data{today}.csv'
 
 @st.cache
 def load_data():
     df = pd.read_csv(DATA_URL)
-    df = df[["title","name","published","link","scrape_time"]]
+    df = df[["title","name","published","link","scrape_time","text"]]
     df = df.sort_values('published', ascending=False)
     return df
 
 
-big_topics = []
-with open("big_topics.txt", "r") as f:
-  for line in f:
-    big_topics.append(line)
+
+
+
+big_topics = dictSave.load(f'data/big_topics{today}.json')
 
 # Inject CSS with Markdown
 st.markdown(hide_table_row_index, unsafe_allow_html=True)
+st.markdown(collapsible_css, unsafe_allow_html=True)
 
 
 
@@ -47,19 +48,16 @@ st.caption(f"Seneste overskrifter er hentet: {df['scrape_time'].values[0]}")
 
 
 
-
-
-#st.markdown(f"""<div id='scatter'></div>""", unsafe_allow_html=True)
-
 with st.sidebar:
     st.markdown("""## \U0001F39B    Filtrer nyhederne!""")
 
     selected_topic = st.selectbox(
         'Dagens emner',
-        tuple(['Intet valgt'] + big_topics)
+        tuple(['Intet valgt'] + list(big_topics.keys()))
     )
     if selected_topic != 'Intet valgt':
-        keywords = selected_topic.split(' ')
+        selected_topic_keywords = big_topics[selected_topic]
+        keywords = selected_topic_keywords.split(' ')
         df = df[
             df['title'].apply(
                 lambda x: any([k.lower() in x.lower() for k in keywords])
@@ -79,13 +77,12 @@ if search_word != '':
 if options:
     df = df[df['name'].apply(lambda x: x in options)]
 
+
+
+
 for i in range(df.shape[0]):
-    st.markdown(f"""<div><p> <strong>{df['name'].values[i]}</strong>: {df['title'].values[i]} <span style=color:#ff9762;">{df['published'].values[i]}</span></p></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div><p> <strong>{df['name'].values[i]}</strong>: <a href={df['link'].values[i]} style=color:#ffffff;text-decoration:none>{df['title'].values[i]} </a> <span style=color:#ff9762;">{df['published'].values[i]}</span> </p></div>""", unsafe_allow_html=True)
 
-
-
-
-#st.table(df)
 
 
 

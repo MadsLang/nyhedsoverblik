@@ -1,0 +1,11 @@
+name: Get new data:
+runs-on: macos-12
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
