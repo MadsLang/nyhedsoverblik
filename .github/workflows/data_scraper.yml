@@ -4,8 +4,10 @@ on:
   schedule:
     - cron: '0 9 * * *'
   workflow_dispatch:
-runs:
-  using: "composite"
+
+jobs:
+  get_new_data_job:
+  name: Gets new data
   steps:
     #----------------------------------------------
     #       check-out repo and set-up python
