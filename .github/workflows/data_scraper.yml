@@ -52,7 +52,9 @@ jobs:
         with:
           add: 'data'
           author_name: Data-getter
+          fetch: false
           message: 'Added new data'
+          push: --force
       #----------------------------------------------
       # Send a request to app
       #----------------------------------------------
