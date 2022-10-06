@@ -59,7 +59,7 @@ jobs:
       # Send a request to app
       #----------------------------------------------
       - name: Request app
-        run: wget --no-cache --spider https://madslang-nyhedsoverblik-my-app-tutnsz.streamlitapp.com/
+        run: wget --no-cache --spider https://madslang-nyhedsoverblik--nyhedsoverblik-w8zis8.streamlitapp.com/
     
 
 
