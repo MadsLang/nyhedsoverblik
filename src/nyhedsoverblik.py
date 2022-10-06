@@ -259,4 +259,4 @@ if __name__ == '__main__':
 
     tmodel = TopicModel(df=final_df)
     big_topics = tmodel.get_topics()
-    dictSave.save(big_topics, f'big_topics{today}.json')
+    dictSave.save(big_topics, f'data/big_topics{today}.json')
