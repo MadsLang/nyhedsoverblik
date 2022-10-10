@@ -7,7 +7,7 @@ import datetime
 
 
 
-@st.cache(suppress_st_warning=True)
+@st.cache()
 def load_all_data():
     day = datetime.datetime.today().date()
     dfs = []
@@ -26,8 +26,11 @@ def load_all_data():
     df = df.sort_values('published', ascending=False)
     return df
 
-
+# Create a text element and let the reader know the data is loading.
+data_load_state = st.text('Loading data...')
 df = load_all_data()
+data_load_state.text("")
+
 
 
 with st.sidebar:
