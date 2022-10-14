@@ -1,6 +1,6 @@
 # nyhedsoverblik
 
-This is the repository of my app, which you can visit at: https://madslang-nyhedsoverblik--nyhedsoverblik-w8zis8.streamlitapp.com/
+This is the repository of my app, which you can visit at: https://nyhedsoverblik.streamlitapp.com/
 
 
 It is a news app, that every day at 9AM fetches the headlines from Danish news media: DR, TV2, Jyllandsposten, Berlingske, Politiken, and Ekstra-Bladet. Based on the headlines, I run a clustering analysis and estimate today's topics. 
