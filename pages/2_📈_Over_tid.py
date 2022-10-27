@@ -3,24 +3,19 @@ from streamlit.components.v1 import html
 import pandas as pd
 import numpy as np
 import datetime
+import glob
 
 
 
 
 @st.cache()
 def load_all_data():
-    day = datetime.datetime.today().date()
+    all_files = glob.glob("data/data*.csv")
     dfs = []
-    while True:
-        try:
-            DATA_URL = f'data/data{day.strftime("%Y-%m-%d")}.csv'
-            df = pd.read_csv(DATA_URL)
-            df = df[["title","name","published","link","scrape_time","text"]]
-            df['date_scrape'] = day.strftime("%Y-%m-%d")
-            dfs.append(df)
-            day = day - datetime.timedelta(days=1) 
-        except:
-            break
+    for file_name in all_files:
+        df = pd.read_csv(file_name)
+        df = df[["title","name","published","link","scrape_time","text"]]
+        dfs.append(df)
 
     df = pd.concat(dfs)
     df = df.sort_values('published', ascending=False)
@@ -52,14 +47,14 @@ if options:
 
 
 
-g = df['date_scrape'].value_counts().reset_index()
-g = g.rename(columns={'index':'Dato','date_scrape':'Antal artikler'})
+g = df['scrape_time'].value_counts().reset_index()
+g = g.rename(columns={'index':'Dato','scrape_time':'Antal artikler'})
 
 st.vega_lite_chart(g, {
     "width": 800,"height": 500,
     "mark": {"type": "bar", "color": "#ff9762", "tooltip": True},
     "encoding": {
-        "x": {"field": "Dato", "type": "nominal", "axis": {"labelAngle": 0}},
+        "x": {"field": "Dato", "type": "ordinal", "axis": {"labelAngle": 0}},
         "y": {"field": "Antal artikler", "type": "quantitative", "axis": {"tickMinStep": 1}},
         "opacity": {
           "condition": {"test": {"param": "hover", "empty": False}, "value": 0.7},
