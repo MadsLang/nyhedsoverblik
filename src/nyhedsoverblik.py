@@ -33,7 +33,7 @@ sites = [
         "url": f"https://nyheder.tv2.dk/live/{today}-nyhedsoverblik", 
         "link_url": f"https://nyheder.tv2.dk/live/{today}-nyhedsoverblik",
         "xpaths": {
-            "title": "//h2[@class='tc_heading tc_post__body__title tc_heading--5']",
+            "title": "//h2[contains(@class,'tc_heading tc_post__body__title tc_heading')]",
             "text": "//div[@class='tc_post__body__post']",
             "published": "//header[@class='tc_post__header']",
             "link": None
