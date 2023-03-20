@@ -78,9 +78,9 @@ sites = [
         "url": "https://ekstrabladet.dk/nyheder/",
         "link_url": "https://ekstrabladet.dk",
         "xpaths": {
-            "title": "//div[@class='card-content']//h2",
+            "title": "//h2[contains(@class,'title')]",
             "text": None,
-            "published": "//div[@class='card-content']//span[@data-timestamp]",
+            "published": "//a[@data-articleid]",
             "link": "//a[@data-articleid]"
         }
     }
